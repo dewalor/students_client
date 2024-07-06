@@ -1,6 +1,5 @@
 import FetchService from './service/FetchService';
 
-/*-- Objects --*/
 const fetchService = new FetchService();
 /*-- /Objects --*/
 
@@ -18,19 +17,17 @@ async function submitForm(e, form) {
     // 2.3 Build Headers
     const headers = buildHeaders();
     // 2.4 Request & Response
-    const response = await fetchService.performPostHttpRequest(`https://jsonplaceholder.typicode.com/posts`, headers, jsonFormData); // Uses JSON Placeholder
-    console.log(response);
+    const response = await fetchService.performPostHttpRequest(`http://localhost:8080/students`, headers, jsonFormData); 
     // 2.5 Inform user of result
     if(response)
-        window.location = `/success.html?FirstName=${response.FirstName}&LastName=${response.LastName}&Email=${response.Email}&id=${response.id}`;
+        window.location.reload(true);
     else
         alert(`An error occured.`);
 }
 
-function buildHeaders(authorization = null) {
+function buildHeaders() {
     const headers = {
         "Content-Type": "application/json",
-        "Authorization": (authorization) ? authorization : "Bearer TOKEN_MISSING"
     };
     return headers;
 }
@@ -43,6 +40,45 @@ function buildJsonFormData(form) {
     return jsonFormData;
 }
 /*--/Functions--*/
+// 1) Fetch data from remote API
+async function getStudents() {
+    try {
+      const response = await fetch(
+        'http://localhost:8080/students',
+        {
+          method: 'GET',
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error! status: ${response.status}`);
+      }
+
+      const responseJson = await response.json();
+
+      return responseJson;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  // 2) Render the data in your HTML
+  getStudents().then(json => {
+
+    const ol = document.createElement('ol');
+
+    json.data.forEach(student => {
+      const li = document.createElement('li');
+      li.innerHTML = student.name + "&nbsp&nbsp&nbsp Grade " + student.grade;
+
+      li.style.fontSize = '22px';
+
+      ol.appendChild(li);
+    });
+
+    const container = document.getElementById('json-data');
+    container.appendChild(ol);
+  });
 
 /*--Event Listeners--*/
 const sampleForm = document.querySelector("#sampleForm");
@@ -51,4 +87,3 @@ if(sampleForm) {
         submitForm(e, this);
     });
 }
-/*--/Event Listeners--*/
